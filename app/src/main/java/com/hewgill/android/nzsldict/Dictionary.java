@@ -143,7 +143,8 @@ public class Dictionary {
                 // load the tags/categories/topics the word is part of
                 List<String> wordTags = Collections.emptyList();
                 if (a.length >= 8){
-                    wordTags = Arrays.asList(a[7].split("\\s*[^\\w\\s]+\\s*"));
+                    // split on every comma NOT followed by a space
+                    wordTags = Arrays.asList(a[7].split(",(?=[^ ])"));
                 }
 
                 DictItem item = new DictItem(a[0], a[1], a[2], a[3], a[4], a[5], a[6], wordTags);
