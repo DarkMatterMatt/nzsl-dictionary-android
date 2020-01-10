@@ -1,13 +1,20 @@
 package com.hewgill.android.nzsldict;
 
 import android.content.Intent;
+import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.text.Html;
+import android.util.Log;
+import android.util.TypedValue;
 import android.widget.TextView;
+
+import com.google.android.flexbox.FlexboxLayout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +24,7 @@ public class WordActivity extends BaseActivity {
     private TextView gloss;
     private TextView minor;
     private TextView maori;
+    private FlexboxLayout tagsLayout;
     private SignVideoFragment mVideoFragment;
     private ViewPager viewPager;
     private Dictionary.DictItem item;
@@ -32,6 +40,7 @@ public class WordActivity extends BaseActivity {
         gloss = (TextView) findViewById(R.id.gloss);
         minor = (TextView) findViewById(R.id.minor);
         maori = (TextView) findViewById(R.id.maori);
+        tagsLayout = (FlexboxLayout) findViewById(R.id.tags);
         viewPager = (ViewPager) findViewById(R.id.sign_media_pager);
         setupSignMediaPager(viewPager);
         TabLayout tabLayout = (TabLayout) findViewById(R.id.sign_tabs);
@@ -40,6 +49,27 @@ public class WordActivity extends BaseActivity {
         gloss.setText(item.gloss);
         minor.setText(item.minor);
         maori.setText(item.maori);
+
+        // fetch link colour from styles.xml
+        TypedValue typedValue = new TypedValue();
+        this.getTheme().resolveAttribute(R.attr.colorPrimary, typedValue, true);
+        String linkColor = String.format("%X", typedValue.data).substring(2); // strip alpha value
+        Log.d("MM", linkColor);
+
+        // create the list of tags
+        for (int i = 0; i < item.tags.size(); i++){
+            TextView tv = new TextView(this);
+            String text = item.tags.get(i).toLowerCase();
+            text = String.format("<font color=\"#%s\"><b><u>%s</u></b></font>", linkColor, text);
+
+            // add trailing comma
+            if (i < item.tags.size() - 1) {
+                text += ", ";
+            }
+
+            tv.setText(Html.fromHtml(text));
+            tagsLayout.addView(tv);
+        }
     }
 
     private void setupSignMediaPager(ViewPager viewPager) {
