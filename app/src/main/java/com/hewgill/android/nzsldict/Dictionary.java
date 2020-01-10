@@ -84,7 +84,7 @@ public class Dictionary {
             tags = null;
         }
 
-        public DictItem(String gloss, String minor, String maori, String image, String video, String handshape, String location, String tags) {
+        public DictItem(String gloss, String minor, String maori, String image, String video, String handshape, String location, List<String> tags) {
             this.gloss = gloss;
             this.minor = minor;
             this.maori = maori;
@@ -92,7 +92,7 @@ public class Dictionary {
             this.video = video;
             this.handshape = handshape;
             this.location = location;
-            this.tags = Arrays.asList(normalise(tags).split("\\s+\\W+\\s+"));
+            this.tags = tags;
         }
 
         public String imagePath() {
@@ -126,6 +126,7 @@ public class Dictionary {
     }
 
     private ArrayList<DictItem> words = new ArrayList();
+    private Map<String, ArrayList<DictItem>> tags = new HashMap<>();
 
     public Dictionary(Context context) {
         InputStream db = null;
@@ -138,8 +139,23 @@ public class Dictionary {
                     break;
                 }
                 String[] a = s.split("\t");
-                String tags = a.length >= 8 ? a[7] : "";
-                words.add(new DictItem(a[0], a[1], a[2], a[3], a[4], a[5], a[6], tags));
+
+                // load the tags/categories/topics the word is part of
+                List<String> wordTags = Collections.emptyList();
+                if (a.length >= 8){
+                    wordTags = Arrays.asList(a[7].split("\\s+\\W+\\s+"));
+                }
+
+                DictItem item = new DictItem(a[0], a[1], a[2], a[3], a[4], a[5], a[6], wordTags);
+                words.add(item);
+
+                // give each tag a reference to the item
+                for (String tag : wordTags) {
+                    if (!tags.containsKey(tag)) {
+                        tags.put(tag, new ArrayList<DictItem>());
+                    }
+                    tags.get(tag).add(item);
+                }
             }
         } catch (IOException x) {
             Log.d("dictionary", "exception reading from word list " + x.getMessage());
