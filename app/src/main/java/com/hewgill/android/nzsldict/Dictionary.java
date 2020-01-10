@@ -37,6 +37,8 @@ public class Dictionary {
         public String gloss;
         public String minor;
         public String maori;
+        public List<String> glossWords;
+        public List<String> minorWords;
         public String image;
         public String video;
         public String handshape;
@@ -76,6 +78,8 @@ public class Dictionary {
             gloss = null;
             minor = null;
             maori = null;
+            glossWords = null;
+            minorWords = null;
             image = null;
             video = null;
             handshape = null;
@@ -86,6 +90,8 @@ public class Dictionary {
             this.gloss = gloss;
             this.minor = minor;
             this.maori = maori;
+            this.glossWords = Arrays.asList(normalise(gloss).split("\\s+\\W+\\s+"));
+            this.minorWords = Arrays.asList(normalise(minor).split("\\s+\\W+\\s+"));
             this.image = image;
             this.video = video;
             this.handshape = handshape;
@@ -194,13 +200,11 @@ public class Dictionary {
             String gloss = normalise(d.gloss);
             String minor = normalise(d.minor);
             String maori = normalise(d.maori);
-            List<String> glossWords = Arrays.asList(gloss.split("\\s+\\W+\\s+"));
-            List<String> minorWords = Arrays.asList(minor.split("\\s+\\W+\\s+"));
 
             if (gloss.equals(term) || maori.equals(term)) exactPrimaryMatches.add(d);
             else if (minor.equals(term)) exactSecondaryMatches.add(d);
-            else if (glossWords.contains(term)) exactPrimaryWordMatches.add(d);
-            else if (minorWords.contains(term)) exactSecondaryWordMatches.add(d);
+            else if (d.glossWords.contains(term)) exactPrimaryWordMatches.add(d);
+            else if (d.minorWords.contains(term)) exactSecondaryWordMatches.add(d);
             else if (gloss.startsWith(term) || maori.startsWith(term)) startsWithPrimaryMatches.add(d);
             else if (gloss.contains(term) || maori.contains(term)) containsPrimaryMatches.add(d);
             else if (minor.contains(term)) containsSecondaryMatches.add(d);
