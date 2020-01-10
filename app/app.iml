@@ -120,5 +120,6 @@
     <orderEntry type="library" name="Gradle: com.android.support:support-core-utils:25.4.0@aar" level="project" />
     <orderEntry type="library" name="Gradle: com.android.support:support-core-ui:25.4.0@aar" level="project" />
     <orderEntry type="library" name="Gradle: com.android.support:support-compat:25.4.0@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.google.android:flexbox:1.0.0@aar" level="project" />
   </component>
 </module>
