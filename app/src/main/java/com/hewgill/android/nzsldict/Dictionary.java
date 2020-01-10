@@ -181,21 +181,28 @@ public class Dictionary {
         // in. Because it is a sorted set, uniqueness is guaranteed, and results should also be
         // naturally ordered.
         SortedSet<DictItem> exactPrimaryMatches = new TreeSet<>();
+        SortedSet<DictItem> exactPrimaryWordMatches = new TreeSet<>();
+        SortedSet<DictItem> exactSecondaryMatches = new TreeSet<>();
+        SortedSet<DictItem> exactSecondaryWordMatches = new TreeSet<>();
         SortedSet<DictItem> startsWithPrimaryMatches = new TreeSet<>();
         SortedSet<DictItem> containsPrimaryMatches = new TreeSet<>();
-        SortedSet<DictItem> exactSecondaryMatches = new TreeSet<>();
         SortedSet<DictItem> containsSecondaryMatches = new TreeSet<>();
 
         String term = normalise(target);
+
         for (DictItem d : words) {
             String gloss = normalise(d.gloss);
             String minor = normalise(d.minor);
             String maori = normalise(d.maori);
+            List<String> glossWords = Arrays.asList(gloss.split("\\s+\\W+\\s+"));
+            List<String> minorWords = Arrays.asList(minor.split("\\s+\\W+\\s+"));
 
             if (gloss.equals(term) || maori.equals(term)) exactPrimaryMatches.add(d);
-            if (gloss.startsWith(term) || maori.startsWith(term)) startsWithPrimaryMatches.add(d);
-            else if (gloss.contains(term) || maori.contains(term)) containsPrimaryMatches.add(d);
             else if (minor.equals(term)) exactSecondaryMatches.add(d);
+            else if (glossWords.contains(term)) exactPrimaryWordMatches.add(d);
+            else if (minorWords.contains(term)) exactSecondaryWordMatches.add(d);
+            else if (gloss.startsWith(term) || maori.startsWith(term)) startsWithPrimaryMatches.add(d);
+            else if (gloss.contains(term) || maori.contains(term)) containsPrimaryMatches.add(d);
             else if (minor.contains(term)) containsSecondaryMatches.add(d);
         }
 
@@ -205,16 +212,20 @@ public class Dictionary {
         // Given: [exact: [e1, e2, e3], contains: [c1, c2, c2], exactSecondary: [es1, es2, es3]
         // Then: results = [e1, e2, e3, c1, c2, c3, es1, es2, es3]
         int resultCount = exactPrimaryMatches.size() +
+                exactSecondaryMatches.size() +
+                exactPrimaryWordMatches.size() +
+                exactSecondaryWordMatches.size() +
                 startsWithPrimaryMatches.size() +
                 containsPrimaryMatches.size() +
-                exactSecondaryMatches.size() +
                 containsSecondaryMatches.size();
 
         LinkedHashSet<DictItem> results = new LinkedHashSet<>(resultCount);
         results.addAll(exactPrimaryMatches);
+        results.addAll(exactSecondaryMatches);
+        results.addAll(exactPrimaryWordMatches);
+        results.addAll(exactSecondaryWordMatches);
         results.addAll(startsWithPrimaryMatches);
         results.addAll(containsPrimaryMatches);
-        results.addAll(exactSecondaryMatches);
         results.addAll(containsSecondaryMatches);
 
         return new ArrayList<>(results);
