@@ -91,7 +91,7 @@ public class CategoryActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        dictionary = new Dictionary(getApplicationContext());
+        dictionary = Dictionary.getInstance(getApplicationContext());
         // following based on http://stackoverflow.com/questions/1737009/how-to-make-a-nice-looking-listview-filter-on-android
         setContentView(R.layout.category);
         setupAppToolbar();

@@ -25,7 +25,7 @@ public class DictionaryAndroidUnitTest {
 
     @Before
     public void createDictionary() {
-        mDictionary = new Dictionary(getInstrumentation().getTargetContext());
+        mDictionary = Dictionary.getInstance(getInstrumentation().getTargetContext());
     }
 
     @After

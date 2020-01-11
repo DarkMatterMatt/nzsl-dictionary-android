@@ -32,6 +32,7 @@ public class Dictionary {
     private static final Integer CONTAINS_PRIMARY_MATCH_WEIGHTING = 80;
     private static final Integer EXACT_SECONDARY_MATCH_WEIGHTING = 70;
     private static final Integer CONTAINS_SECONDARY_MATCH_WEIGHTING = 60;
+    private static volatile Dictionary instance = null;
 
     public static class DictCategory implements Serializable, Comparable {
         public String name;
@@ -160,7 +161,18 @@ public class Dictionary {
     private ArrayList<DictItem> words = new ArrayList();
     private Map<String, DictCategory> categories = new HashMap<>();
 
-    public Dictionary(Context context) {
+    public static Dictionary getInstance(Context context) {
+        if (instance == null) {
+            synchronized(Dictionary.class) {
+                if (instance == null) {
+                    instance = new Dictionary(context);
+                }
+            }
+        }
+        return instance;
+    }
+
+    private Dictionary(Context context) {
         InputStream db = null;
         try {
             db = context.getAssets().open("db/nzsl.dat");
