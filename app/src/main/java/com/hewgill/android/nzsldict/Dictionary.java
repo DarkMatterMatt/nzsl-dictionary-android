@@ -33,6 +33,22 @@ public class Dictionary {
     private static final Integer EXACT_SECONDARY_MATCH_WEIGHTING = 70;
     private static final Integer CONTAINS_SECONDARY_MATCH_WEIGHTING = 60;
 
+    public static class DictCategory implements Serializable, Comparable {
+        public String name;
+        public ArrayList<DictItem> words;
+
+        public DictCategory(String name, ArrayList<DictItem> words) {
+            this.name = name;
+            this.words = words;
+        }
+
+        @Override
+        public int compareTo(@NonNull Object o) {
+            DictCategory other = (DictCategory) o;
+            return this.name.compareTo(other.name);
+        }
+    }
+
     public static class DictItem implements Serializable, Comparable {
         public String gloss;
         public String minor;
@@ -43,6 +59,7 @@ public class Dictionary {
         public String video;
         public String handshape;
         public String location;
+        public List<String> categories;
 
         static Map<String, String> Locations = new HashMap<String, String>();
 
@@ -72,8 +89,6 @@ public class Dictionary {
             Locations.put("upper leg", "location_4_15_upper_leg");
         }
 
-        ;
-
         public DictItem() {
             gloss = null;
             minor = null;
@@ -84,9 +99,10 @@ public class Dictionary {
             video = null;
             handshape = null;
             location = null;
+            categories = null;
         }
 
-        public DictItem(String gloss, String minor, String maori, String image, String video, String handshape, String location) {
+        public DictItem(String gloss, String minor, String maori, String image, String video, String handshape, String location, List<String> categories) {
             this.gloss = gloss;
             this.minor = minor;
             this.maori = maori;
@@ -96,6 +112,7 @@ public class Dictionary {
             this.video = video;
             this.handshape = handshape;
             this.location = location;
+            this.categories = categories;
         }
 
         public String imagePath() {
@@ -124,11 +141,12 @@ public class Dictionary {
         @Override
         public int compareTo(@NonNull Object o) {
             DictItem other = (DictItem) o;
-            return this.image.compareTo(other.image);
+            return skip_parens(this.gloss).compareToIgnoreCase(skip_parens(other.gloss));
         }
     }
 
     private ArrayList<DictItem> words = new ArrayList();
+    private Map<String, DictCategory> categories = new HashMap<>();
 
     public Dictionary(Context context) {
         InputStream db = null;
@@ -141,7 +159,24 @@ public class Dictionary {
                     break;
                 }
                 String[] a = s.split("\t");
-                words.add(new DictItem(a[0], a[1], a[2], a[3], a[4], a[5], a[6]));
+
+                // load the categories/topics the word is part of
+                List<String> wordCategories = Collections.emptyList();
+                if (a.length >= 8) {
+                    // split on every comma NOT followed by a space
+                    wordCategories = Arrays.asList(a[7].split(",(?=[^ ])"));
+                }
+
+                DictItem item = new DictItem(a[0], a[1], a[2], a[3], a[4], a[5], a[6], wordCategories);
+                words.add(item);
+
+                // give each tag a reference to the item
+                for (String category : wordCategories) {
+                    if (!categories.containsKey(category)) {
+                        categories.put(category, new DictCategory(category, new ArrayList<DictItem>()));
+                    }
+                    categories.get(category).words.add(item);
+                }
             }
         } catch (IOException x) {
             Log.d("dictionary", "exception reading from word list " + x.getMessage());
@@ -154,19 +189,18 @@ public class Dictionary {
                 }
             }
         }
-        Collections.sort(words, new Comparator() {
-            public int compare(Object o1, Object o2) {
-                DictItem d1 = (DictItem) o1;
-                DictItem d2 = (DictItem) o2;
-                String s1 = skip_parens(d1.gloss);
-                String s2 = skip_parens(d2.gloss);
-                return s1.compareToIgnoreCase(s2);
-            }
-        });
+        Collections.sort(words);
+        for (DictCategory category : categories.values()) {
+            Collections.sort(category.words);
+        }
     }
 
     public List<DictItem> getWords() {
         return words;
+    }
+
+    public Map<String, DictCategory> getCategories() {
+        return categories;
     }
 
     private static String normalise(String s) {
@@ -335,7 +369,7 @@ public class Dictionary {
         }
     }
 
-    private String skip_parens(String s) {
+    private static String skip_parens(String s) {
         if (s.charAt(0) == '(') {
             int i = s.indexOf(") ");
             if (i > 0) {

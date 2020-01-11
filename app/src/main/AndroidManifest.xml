@@ -20,5 +20,6 @@
             </intent-filter>
         </activity>
         <activity android:name=".WordActivity" android:screenOrientation="portrait" />
+        <activity android:name=".CategoryActivity" android:screenOrientation="portrait" />
     </application>
 </manifest> 

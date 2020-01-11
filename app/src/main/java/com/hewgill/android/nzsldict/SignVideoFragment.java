@@ -125,7 +125,6 @@ public class SignVideoFragment extends Fragment {
         });
         mVideo.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             public void onPrepared(MediaPlayer mp) {
-                mp.setLooping(true);
                 mVideo.setMediaController(mMediaController);
                 mMediaController.setAnchorView(mAnchorView);
             }
