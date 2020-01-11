@@ -1,8 +1,6 @@
 package com.hewgill.android.nzsldict;
 
 import android.content.Intent;
-import android.graphics.Paint;
-import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -11,6 +9,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.text.Html;
 import android.util.TypedValue;
+import android.view.View;
 import android.widget.TextView;
 
 import com.google.android.flexbox.FlexboxLayout;
@@ -64,8 +63,18 @@ public class WordActivity extends BaseActivity {
             if (i < item.categories.size() - 1) {
                 text += ", ";
             }
-
             tv.setText(Html.fromHtml(text));
+
+            tv.setTag(item.categories.get(i));
+            tv.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent next = new Intent();
+                    next.setClass(WordActivity.this, CategoryActivity.class);
+                    next.putExtra("category", (String) v.getTag());
+                    startActivity(next);
+                }
+            });
             tagsLayout.addView(tv);
         }
     }
