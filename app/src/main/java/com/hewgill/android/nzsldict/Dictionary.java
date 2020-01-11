@@ -4,18 +4,24 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.Serializable;
+import java.lang.reflect.Type;
 import java.security.MessageDigest;
 import java.text.Normalizer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,7 +40,7 @@ public class Dictionary {
     private static final Integer CONTAINS_SECONDARY_MATCH_WEIGHTING = 60;
     private static volatile Dictionary instance = null;
 
-    public static class DictCategory implements Serializable, Comparable {
+    public static class DictCategory implements Serializable, Comparable<DictCategory> {
         public String name;
         public ArrayList<DictItem> words;
 
@@ -44,27 +50,26 @@ public class Dictionary {
         }
 
         @Override
-        public int compareTo(@NonNull Object o) {
-            DictCategory other = (DictCategory) o;
+        public int compareTo(@NonNull DictCategory other) {
             return this.name.compareTo(other.name);
         }
     }
 
-    public static class DictItem implements Serializable, Comparable {
+    public static class DictItem implements Serializable, Comparable<DictItem> {
         public String gloss;
         public String minor;
         public String maori;
         public String normGloss;
         public String normMinor;
         public String normMaori;
-        public List<String> glossWords;
-        public List<String> minorWords;
-        public List<String> maoriWords;
+        public ArrayList<String> glossWords;
+        public ArrayList<String> minorWords;
+        public ArrayList<String> maoriWords;
         public String image;
         public String video;
         public String handshape;
         public String location;
-        public List<String> categories;
+        public ArrayList<String> categories;
 
         static Map<String, String> Locations = new HashMap<String, String>();
 
@@ -111,16 +116,16 @@ public class Dictionary {
             categories = null;
         }
 
-        public DictItem(String gloss, String minor, String maori, String image, String video, String handshape, String location, List<String> categories) {
+        public DictItem(String gloss, String minor, String maori, String image, String video, String handshape, String location, ArrayList<String> categories) {
             this.gloss = gloss;
             this.minor = minor;
             this.maori = maori;
             normGloss = normalise(gloss);
             normMinor = normalise(minor);
             normMaori = normalise(maori);
-            glossWords = Arrays.asList(normGloss.split("\\s*[^\\w']+\\s*"));
-            minorWords = Arrays.asList(normMinor.split(", "));
-            maoriWords = Arrays.asList(normMaori.split(", "));
+            glossWords = new ArrayList<>(Arrays.asList(normGloss.split("\\s*[^\\w']+\\s*")));
+            minorWords = new ArrayList<>(Arrays.asList(normMinor.split(", ")));
+            maoriWords = new ArrayList<>(Arrays.asList(normMaori.split(", ")));
             this.image = image;
             this.video = video;
             this.handshape = handshape;
@@ -130,8 +135,7 @@ public class Dictionary {
 
         public String imagePath() {
             if (image.isEmpty()) return "";
-            String assetName = "images/signs/" + image.toLowerCase();
-            return assetName;
+            return "images/signs/" + image.toLowerCase();
         }
 
         public String handshapeImage() {
@@ -150,22 +154,29 @@ public class Dictionary {
             return gloss + "|" + minor + "|" + maori;
         }
 
-        
         @Override
-        public int compareTo(@NonNull Object o) {
-            DictItem other = (DictItem) o;
+        public int compareTo(@NonNull DictItem other) {
             return skip_parens(this.gloss).compareToIgnoreCase(skip_parens(other.gloss));
         }
     }
 
-    private ArrayList<DictItem> words = new ArrayList();
+    private ArrayList<DictItem> words = new ArrayList<>();
     private Map<String, DictCategory> categories = new HashMap<>();
 
     public static Dictionary getInstance(Context context) {
         if (instance == null) {
             synchronized(Dictionary.class) {
                 if (instance == null) {
-                    instance = new Dictionary(context);
+                    File file = context.getFileStreamPath("nzsl.json");
+                    if (file == null || !file.exists()) {
+                        // generate JSON
+                        instance = new Dictionary(context);
+                        saveWordsToJson(context, instance.getWords());
+                    }
+                    else {
+                        ArrayList<DictItem> words = readWordsFromJson(context);
+                        instance = new Dictionary(words);
+                    }
                 }
             }
         }
@@ -185,10 +196,10 @@ public class Dictionary {
                 String[] a = s.split("\t");
 
                 // load the categories/topics the word is part of
-                List<String> wordCategories = Collections.emptyList();
+                ArrayList<String> wordCategories = new ArrayList<>();
                 if (a.length >= 8) {
                     // split on every comma NOT followed by a space
-                    wordCategories = Arrays.asList(a[7].split(",(?=[^ ])"));
+                    wordCategories = new ArrayList<>(Arrays.asList(a[7].split(",(?=[^ ])")));
                 }
 
                 DictItem item = new DictItem(a[0], a[1], a[2], a[3], a[4], a[5], a[6], wordCategories);
@@ -219,7 +230,64 @@ public class Dictionary {
         }
     }
 
-    public List<DictItem> getWords() {
+    private Dictionary(ArrayList<DictItem> words) {
+        this.words = words;
+        for (DictItem word : words) {
+            // give each tag a reference to the item
+            for (String category : word.categories) {
+                if (!categories.containsKey(category)) {
+                    categories.put(category, new DictCategory(category, new ArrayList<DictItem>()));
+                }
+                categories.get(category).words.add(word);
+            }
+        }
+        for (DictCategory category : categories.values()) {
+            Collections.sort(category.words);
+        }
+    }
+
+    private static void saveWordsToJson(Context context, ArrayList<DictItem> words) {
+        try {
+            Gson gson = new Gson();
+            OutputStreamWriter osw = new OutputStreamWriter(context.openFileOutput("nzsl.json", Context.MODE_PRIVATE));
+            osw.write(gson.toJson(words));
+            osw.close();
+        }
+        catch (IOException e) {
+            Log.e("Exception", "File write failed: " + e.toString());
+        }
+    }
+
+    private static ArrayList<DictItem> readWordsFromJson(Context context) {
+        try {
+            InputStream inputStream = context.openFileInput("nzsl.json");
+            if ( inputStream == null ) {
+                return new ArrayList<>();
+            }
+            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+            String receiveString = "";
+            StringBuilder stringBuilder = new StringBuilder();
+
+            while ( (receiveString = bufferedReader.readLine()) != null ) {
+                stringBuilder.append(receiveString);
+            }
+            inputStream.close();
+
+            Gson gson = new Gson();
+            Type type = new TypeToken<ArrayList<DictItem>>() {}.getType();
+            return gson.fromJson(stringBuilder.toString(), type);
+        }
+        catch (FileNotFoundException e) {
+            Log.e("Dictionary", "File not found: " + e.toString());
+        }
+        catch (IOException e) {
+            Log.e("Dictionary", "Can not read file: " + e.toString());
+        }
+        return new ArrayList<>();
+    }
+
+    public ArrayList<DictItem> getWords() {
         return words;
     }
 
