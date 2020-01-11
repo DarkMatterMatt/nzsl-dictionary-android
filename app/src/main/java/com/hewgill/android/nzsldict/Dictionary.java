@@ -119,8 +119,8 @@ public class Dictionary {
             normMinor = normalise(minor);
             normMaori = normalise(maori);
             glossWords = Arrays.asList(normGloss.split("\\s*[^\\w']+\\s*"));
-            minorWords = Arrays.asList(normMinor.split("\\s*[^\\w']+\\s*"));
-            maoriWords = Arrays.asList(normMinor.split("\\s*[^\\w']+\\s*"));
+            minorWords = Arrays.asList(normMinor.split(", "));
+            maoriWords = Arrays.asList(normMaori.split(", "));
             this.image = image;
             this.video = video;
             this.handshape = handshape;
@@ -235,6 +235,10 @@ public class Dictionary {
             char c = s.charAt(i);
             // 0-9, a-z
             if (48 <= c && c <= 57 || 97 <= c && c <= 122) {
+                r.append(c);
+            }
+            // <space>, <comma>
+            else if (c == 32 || c == 44) {
                 r.append(c);
             }
         }
