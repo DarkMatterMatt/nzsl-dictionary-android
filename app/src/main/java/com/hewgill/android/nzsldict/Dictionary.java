@@ -35,11 +35,11 @@ public class Dictionary {
 
     public static class DictCategory implements Serializable {
         public String name;
-        public ArrayList<DictItem> items;
+        public ArrayList<DictItem> words;
 
-        public DictCategory(String name, ArrayList<DictItem> items) {
+        public DictCategory(String name, ArrayList<DictItem> words) {
             this.name = name;
-            this.items = items;
+            this.words = words;
         }
     }
 
@@ -165,7 +165,7 @@ public class Dictionary {
                     if (!categories.containsKey(category)) {
                         categories.put(category, new DictCategory(category, new ArrayList<DictItem>()));
                     }
-                    categories.get(category).items.add(item);
+                    categories.get(category).words.add(item);
                 }
             }
         } catch (IOException x) {
@@ -192,6 +192,10 @@ public class Dictionary {
 
     public List<DictItem> getWords() {
         return words;
+    }
+
+    public Map<String, DictCategory> getCategories() {
+        return categories;
     }
 
     private static String normalise(String s) {
