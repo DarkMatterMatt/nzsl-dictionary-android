@@ -4,18 +4,24 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.Serializable;
+import java.lang.reflect.Type;
 import java.security.MessageDigest;
 import java.text.Normalizer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -148,7 +154,6 @@ public class Dictionary {
             return gloss + "|" + minor + "|" + maori;
         }
 
-        
         @Override
         public int compareTo(@NonNull DictItem other) {
             return skip_parens(this.gloss).compareToIgnoreCase(skip_parens(other.gloss));
@@ -162,7 +167,16 @@ public class Dictionary {
         if (instance == null) {
             synchronized(Dictionary.class) {
                 if (instance == null) {
-                    instance = new Dictionary(context);
+                    File file = context.getFileStreamPath("nzsl.json");
+                    if (file == null || !file.exists()) {
+                        // generate JSON
+                        instance = new Dictionary(context);
+                        saveWordsToJson(context, instance.getWords());
+                    }
+                    else {
+                        ArrayList<DictItem> words = readWordsFromJson(context);
+                        instance = new Dictionary(words);
+                    }
                 }
             }
         }
@@ -216,7 +230,64 @@ public class Dictionary {
         }
     }
 
-    public List<DictItem> getWords() {
+    private Dictionary(ArrayList<DictItem> words) {
+        this.words = words;
+        for (DictItem word : words) {
+            // give each tag a reference to the item
+            for (String category : word.categories) {
+                if (!categories.containsKey(category)) {
+                    categories.put(category, new DictCategory(category, new ArrayList<DictItem>()));
+                }
+                categories.get(category).words.add(word);
+            }
+        }
+        for (DictCategory category : categories.values()) {
+            Collections.sort(category.words);
+        }
+    }
+
+    private static void saveWordsToJson(Context context, ArrayList<DictItem> words) {
+        try {
+            Gson gson = new Gson();
+            OutputStreamWriter osw = new OutputStreamWriter(context.openFileOutput("nzsl.json", Context.MODE_PRIVATE));
+            osw.write(gson.toJson(words));
+            osw.close();
+        }
+        catch (IOException e) {
+            Log.e("Exception", "File write failed: " + e.toString());
+        }
+    }
+
+    private static ArrayList<DictItem> readWordsFromJson(Context context) {
+        try {
+            InputStream inputStream = context.openFileInput("nzsl.json");
+            if ( inputStream == null ) {
+                return new ArrayList<>();
+            }
+            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+            String receiveString = "";
+            StringBuilder stringBuilder = new StringBuilder();
+
+            while ( (receiveString = bufferedReader.readLine()) != null ) {
+                stringBuilder.append(receiveString);
+            }
+            inputStream.close();
+
+            Gson gson = new Gson();
+            Type type = new TypeToken<ArrayList<DictItem>>() {}.getType();
+            return gson.fromJson(stringBuilder.toString(), type);
+        }
+        catch (FileNotFoundException e) {
+            Log.e("Dictionary", "File not found: " + e.toString());
+        }
+        catch (IOException e) {
+            Log.e("Dictionary", "Can not read file: " + e.toString());
+        }
+        return new ArrayList<>();
+    }
+
+    public ArrayList<DictItem> getWords() {
         return words;
     }
 
