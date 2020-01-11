@@ -131,7 +131,7 @@ public class WordActivity extends BaseActivity {
         public void onPageSelected(int position) {
             ViewPagerAdapter vpa = (ViewPagerAdapter) mPager.getAdapter();
             if (vpa.getPageTitle(position).equals("Video")) {
-                mVideoFragment.showControls();
+                mVideoFragment.start();
             } else {
                 mVideoFragment.stop();
             }

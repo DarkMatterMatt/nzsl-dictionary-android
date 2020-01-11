@@ -146,9 +146,10 @@ public class SignVideoFragment extends Fragment {
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
-    public void showControls() {
+    public void start() {
         mVideo.setVisibility(View.VISIBLE);
-        mMediaController.show();
+        mVideo.seekTo(0);
+        mVideo.start();
     }
 
     public void stop() {
