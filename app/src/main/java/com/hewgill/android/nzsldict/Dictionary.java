@@ -33,13 +33,19 @@ public class Dictionary {
     private static final Integer EXACT_SECONDARY_MATCH_WEIGHTING = 70;
     private static final Integer CONTAINS_SECONDARY_MATCH_WEIGHTING = 60;
 
-    public static class DictCategory implements Serializable {
+    public static class DictCategory implements Serializable, Comparable {
         public String name;
         public ArrayList<DictItem> words;
 
         public DictCategory(String name, ArrayList<DictItem> words) {
             this.name = name;
             this.words = words;
+        }
+
+        @Override
+        public int compareTo(@NonNull Object o) {
+            DictCategory other = (DictCategory) o;
+            return this.name.compareTo(other.name);
         }
     }
 
@@ -80,8 +86,6 @@ public class Dictionary {
             Locations.put("elbow", "location_5_17_elbow");
             Locations.put("upper leg", "location_4_15_upper_leg");
         }
-
-        ;
 
         public DictItem() {
             gloss = null;
@@ -131,7 +135,7 @@ public class Dictionary {
         @Override
         public int compareTo(@NonNull Object o) {
             DictItem other = (DictItem) o;
-            return this.image.compareTo(other.image);
+            return skip_parens(this.gloss).compareToIgnoreCase(skip_parens(other.gloss));
         }
     }
 
@@ -179,15 +183,10 @@ public class Dictionary {
                 }
             }
         }
-        Collections.sort(words, new Comparator() {
-            public int compare(Object o1, Object o2) {
-                DictItem d1 = (DictItem) o1;
-                DictItem d2 = (DictItem) o2;
-                String s1 = skip_parens(d1.gloss);
-                String s2 = skip_parens(d2.gloss);
-                return s1.compareToIgnoreCase(s2);
-            }
-        });
+        Collections.sort(words);
+        for (DictCategory category : categories.values()) {
+            Collections.sort(category.words);
+        }
     }
 
     public List<DictItem> getWords() {
@@ -355,7 +354,7 @@ public class Dictionary {
         }
     }
 
-    private String skip_parens(String s) {
+    private static String skip_parens(String s) {
         if (s.charAt(0) == '(') {
             int i = s.indexOf(") ");
             if (i > 0) {
