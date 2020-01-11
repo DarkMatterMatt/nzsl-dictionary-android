@@ -37,8 +37,12 @@ public class Dictionary {
         public String gloss;
         public String minor;
         public String maori;
+        public String normGloss;
+        public String normMinor;
+        public String normMaori;
         public List<String> glossWords;
         public List<String> minorWords;
+        public List<String> maoriWords;
         public String image;
         public String video;
         public String handshape;
@@ -78,8 +82,12 @@ public class Dictionary {
             gloss = null;
             minor = null;
             maori = null;
+            normGloss = null;
+            normMinor = null;
+            normMaori = null;
             glossWords = null;
             minorWords = null;
+            maoriWords = null;
             image = null;
             video = null;
             handshape = null;
@@ -90,8 +98,12 @@ public class Dictionary {
             this.gloss = gloss;
             this.minor = minor;
             this.maori = maori;
-            this.glossWords = Arrays.asList(normalise(gloss).split("\\s*[^\\w']+\\s*"));
-            this.minorWords = Arrays.asList(normalise(minor).split("\\s*[^\\w']+\\s*"));
+            normGloss = normalise(gloss);
+            normMinor = normalise(minor);
+            normMaori = normalise(maori);
+            glossWords = Arrays.asList(normGloss.split("\\s*[^\\w']+\\s*"));
+            minorWords = Arrays.asList(normMinor.split("\\s*[^\\w']+\\s*"));
+            maoriWords = Arrays.asList(normMinor.split("\\s*[^\\w']+\\s*"));
             this.image = image;
             this.video = video;
             this.handshape = handshape;
@@ -170,16 +182,17 @@ public class Dictionary {
     }
 
     private static String normalise(String s) {
-        s = Normalizer.normalize(s, Normalizer.Form.NFD);
+        s = Normalizer.normalize(s, Normalizer.Form.NFD).toLowerCase();
         StringBuilder r = new StringBuilder(s.length());
         int len = s.length();
         for (int i = 0; i < len; i++) {
             char c = s.charAt(i);
-            if (c < 127) {
+            // 0-9, a-z
+            if (48 <= c && c <= 57 || 97 <= c && c <= 122) {
                 r.append(c);
             }
         }
-        return r.toString().toLowerCase();
+        return r.toString();
     }
 
     public ArrayList<DictItem> getWords(String target) {
@@ -197,17 +210,13 @@ public class Dictionary {
         String term = normalise(target);
 
         for (DictItem d : words) {
-            String gloss = normalise(d.gloss);
-            String minor = normalise(d.minor);
-            String maori = normalise(d.maori);
-
-            if (gloss.equals(term) || maori.equals(term)) exactPrimaryMatches.add(d);
-            else if (minor.equals(term)) exactSecondaryMatches.add(d);
-            else if (d.glossWords.contains(term)) exactPrimaryWordMatches.add(d);
+            if (d.normGloss.equals(term) || d.normMaori.equals(term)) exactPrimaryMatches.add(d);
+            else if (d.normMinor.equals(term)) exactSecondaryMatches.add(d);
+            else if (d.glossWords.contains(term) || d.maoriWords.contains(term)) exactPrimaryWordMatches.add(d);
             else if (d.minorWords.contains(term)) exactSecondaryWordMatches.add(d);
-            else if (gloss.startsWith(term) || maori.startsWith(term)) startsWithPrimaryMatches.add(d);
-            else if (gloss.contains(term) || maori.contains(term)) containsPrimaryMatches.add(d);
-            else if (minor.contains(term)) containsSecondaryMatches.add(d);
+            else if (d.normGloss.startsWith(term) || d.normMaori.startsWith(term)) startsWithPrimaryMatches.add(d);
+            else if (d.normGloss.contains(term) || d.normMaori.contains(term)) containsPrimaryMatches.add(d);
+            else if (d.normMinor.contains(term)) containsSecondaryMatches.add(d);
         }
 
         // Create an ArrayList of the size of all the results, and add each of the sets to it.
