@@ -191,6 +191,10 @@ public class Dictionary {
             if (48 <= c && c <= 57 || 97 <= c && c <= 122) {
                 r.append(c);
             }
+            // <space>, <comma>
+            else if (c == 32 || c == 44) {
+                r.append(c);
+            }
         }
         return r.toString();
     }
