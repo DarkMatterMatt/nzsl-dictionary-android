@@ -90,8 +90,8 @@ public class Dictionary {
             this.gloss = gloss;
             this.minor = minor;
             this.maori = maori;
-            this.glossWords = Arrays.asList(normalise(gloss).split("\\s+\\W+\\s+"));
-            this.minorWords = Arrays.asList(normalise(minor).split("\\s+\\W+\\s+"));
+            this.glossWords = Arrays.asList(normalise(gloss).split("\\s*[^\\w']+\\s*"));
+            this.minorWords = Arrays.asList(normalise(minor).split("\\s*[^\\w']+\\s*"));
             this.image = image;
             this.video = video;
             this.handshape = handshape;
