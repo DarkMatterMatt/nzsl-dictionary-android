@@ -102,8 +102,8 @@ public class Dictionary {
             normMinor = normalise(minor);
             normMaori = normalise(maori);
             glossWords = Arrays.asList(normGloss.split("\\s*[^\\w']+\\s*"));
-            minorWords = Arrays.asList(normMinor.split("\\s*[^\\w']+\\s*"));
-            maoriWords = Arrays.asList(normMinor.split("\\s*[^\\w']+\\s*"));
+            minorWords = Arrays.asList(normMinor.split(", "));
+            maoriWords = Arrays.asList(normMaori.split(", "));
             this.image = image;
             this.video = video;
             this.handshape = handshape;
