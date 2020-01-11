@@ -34,7 +34,7 @@ public class Dictionary {
     private static final Integer CONTAINS_SECONDARY_MATCH_WEIGHTING = 60;
     private static volatile Dictionary instance = null;
 
-    public static class DictCategory implements Serializable, Comparable {
+    public static class DictCategory implements Serializable, Comparable<DictCategory> {
         public String name;
         public ArrayList<DictItem> words;
 
@@ -44,27 +44,26 @@ public class Dictionary {
         }
 
         @Override
-        public int compareTo(@NonNull Object o) {
-            DictCategory other = (DictCategory) o;
+        public int compareTo(@NonNull DictCategory other) {
             return this.name.compareTo(other.name);
         }
     }
 
-    public static class DictItem implements Serializable, Comparable {
+    public static class DictItem implements Serializable, Comparable<DictItem> {
         public String gloss;
         public String minor;
         public String maori;
         public String normGloss;
         public String normMinor;
         public String normMaori;
-        public List<String> glossWords;
-        public List<String> minorWords;
-        public List<String> maoriWords;
+        public ArrayList<String> glossWords;
+        public ArrayList<String> minorWords;
+        public ArrayList<String> maoriWords;
         public String image;
         public String video;
         public String handshape;
         public String location;
-        public List<String> categories;
+        public ArrayList<String> categories;
 
         static Map<String, String> Locations = new HashMap<String, String>();
 
@@ -111,16 +110,16 @@ public class Dictionary {
             categories = null;
         }
 
-        public DictItem(String gloss, String minor, String maori, String image, String video, String handshape, String location, List<String> categories) {
+        public DictItem(String gloss, String minor, String maori, String image, String video, String handshape, String location, ArrayList<String> categories) {
             this.gloss = gloss;
             this.minor = minor;
             this.maori = maori;
             normGloss = normalise(gloss);
             normMinor = normalise(minor);
             normMaori = normalise(maori);
-            glossWords = Arrays.asList(normGloss.split("\\s*[^\\w']+\\s*"));
-            minorWords = Arrays.asList(normMinor.split("\\s*[^\\w']+\\s*"));
-            maoriWords = Arrays.asList(normMinor.split("\\s*[^\\w']+\\s*"));
+            glossWords = new ArrayList<>(Arrays.asList(normGloss.split("\\s*[^\\w']+\\s*")));
+            minorWords = new ArrayList<>(Arrays.asList(normMinor.split("\\s*[^\\w']+\\s*")));
+            maoriWords = new ArrayList<>(Arrays.asList(normMinor.split("\\s*[^\\w']+\\s*")));
             this.image = image;
             this.video = video;
             this.handshape = handshape;
@@ -130,8 +129,7 @@ public class Dictionary {
 
         public String imagePath() {
             if (image.isEmpty()) return "";
-            String assetName = "images/signs/" + image.toLowerCase();
-            return assetName;
+            return "images/signs/" + image.toLowerCase();
         }
 
         public String handshapeImage() {
@@ -152,13 +150,12 @@ public class Dictionary {
 
         
         @Override
-        public int compareTo(@NonNull Object o) {
-            DictItem other = (DictItem) o;
+        public int compareTo(@NonNull DictItem other) {
             return skip_parens(this.gloss).compareToIgnoreCase(skip_parens(other.gloss));
         }
     }
 
-    private ArrayList<DictItem> words = new ArrayList();
+    private ArrayList<DictItem> words = new ArrayList<>();
     private Map<String, DictCategory> categories = new HashMap<>();
 
     public static Dictionary getInstance(Context context) {
@@ -185,10 +182,10 @@ public class Dictionary {
                 String[] a = s.split("\t");
 
                 // load the categories/topics the word is part of
-                List<String> wordCategories = Collections.emptyList();
+                ArrayList<String> wordCategories = new ArrayList<>();
                 if (a.length >= 8) {
                     // split on every comma NOT followed by a space
-                    wordCategories = Arrays.asList(a[7].split(",(?=[^ ])"));
+                    wordCategories = new ArrayList<>(Arrays.asList(a[7].split(",(?=[^ ])")));
                 }
 
                 DictItem item = new DictItem(a[0], a[1], a[2], a[3], a[4], a[5], a[6], wordCategories);
