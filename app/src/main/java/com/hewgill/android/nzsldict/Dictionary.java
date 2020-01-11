@@ -33,6 +33,16 @@ public class Dictionary {
     private static final Integer EXACT_SECONDARY_MATCH_WEIGHTING = 70;
     private static final Integer CONTAINS_SECONDARY_MATCH_WEIGHTING = 60;
 
+    public static class DictCategory implements Serializable {
+        public String name;
+        public ArrayList<DictItem> items;
+
+        public DictCategory(String name, ArrayList<DictItem> items) {
+            this.name = name;
+            this.items = items;
+        }
+    }
+
     public static class DictItem implements Serializable, Comparable {
         public String gloss;
         public String minor;
@@ -41,7 +51,7 @@ public class Dictionary {
         public String video;
         public String handshape;
         public String location;
-        public List<String> tags;
+        public List<String> categories;
 
         static Map<String, String> Locations = new HashMap<String, String>();
 
@@ -81,10 +91,10 @@ public class Dictionary {
             video = null;
             handshape = null;
             location = null;
-            tags = null;
+            categories = null;
         }
 
-        public DictItem(String gloss, String minor, String maori, String image, String video, String handshape, String location, List<String> tags) {
+        public DictItem(String gloss, String minor, String maori, String image, String video, String handshape, String location, List<String> categories) {
             this.gloss = gloss;
             this.minor = minor;
             this.maori = maori;
@@ -92,7 +102,7 @@ public class Dictionary {
             this.video = video;
             this.handshape = handshape;
             this.location = location;
-            this.tags = tags;
+            this.categories = categories;
         }
 
         public String imagePath() {
@@ -126,7 +136,7 @@ public class Dictionary {
     }
 
     private ArrayList<DictItem> words = new ArrayList();
-    private Map<String, ArrayList<DictItem>> tags = new HashMap<>();
+    private Map<String, DictCategory> categories = new HashMap<>();
 
     public Dictionary(Context context) {
         InputStream db = null;
@@ -140,22 +150,22 @@ public class Dictionary {
                 }
                 String[] a = s.split("\t");
 
-                // load the tags/categories/topics the word is part of
-                List<String> wordTags = Collections.emptyList();
-                if (a.length >= 8){
+                // load the categories/topics the word is part of
+                List<String> wordCategories = Collections.emptyList();
+                if (a.length >= 8) {
                     // split on every comma NOT followed by a space
-                    wordTags = Arrays.asList(a[7].split(",(?=[^ ])"));
+                    wordCategories = Arrays.asList(a[7].split(",(?=[^ ])"));
                 }
 
-                DictItem item = new DictItem(a[0], a[1], a[2], a[3], a[4], a[5], a[6], wordTags);
+                DictItem item = new DictItem(a[0], a[1], a[2], a[3], a[4], a[5], a[6], wordCategories);
                 words.add(item);
 
                 // give each tag a reference to the item
-                for (String tag : wordTags) {
-                    if (!tags.containsKey(tag)) {
-                        tags.put(tag, new ArrayList<DictItem>());
+                for (String category : wordCategories) {
+                    if (!categories.containsKey(category)) {
+                        categories.put(category, new DictCategory(category, new ArrayList<DictItem>()));
                     }
-                    tags.get(tag).add(item);
+                    categories.get(category).items.add(item);
                 }
             }
         } catch (IOException x) {

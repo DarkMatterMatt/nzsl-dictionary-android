@@ -10,7 +10,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.text.Html;
-import android.util.Log;
 import android.util.TypedValue;
 import android.widget.TextView;
 
@@ -54,16 +53,15 @@ public class WordActivity extends BaseActivity {
         TypedValue typedValue = new TypedValue();
         this.getTheme().resolveAttribute(R.attr.colorPrimary, typedValue, true);
         String linkColor = String.format("%X", typedValue.data).substring(2); // strip alpha value
-        Log.d("MM", linkColor);
 
         // create the list of tags
-        for (int i = 0; i < item.tags.size(); i++){
+        for (int i = 0; i < item.categories.size(); i++){
             TextView tv = new TextView(this);
-            String text = item.tags.get(i).toLowerCase();
+            String text = item.categories.get(i).toLowerCase();
             text = String.format("<font color=\"#%s\"><b><u>%s</u></b></font>", linkColor, text);
 
             // add trailing comma
-            if (i < item.tags.size() - 1) {
+            if (i < item.categories.size() - 1) {
                 text += ", ";
             }
 
