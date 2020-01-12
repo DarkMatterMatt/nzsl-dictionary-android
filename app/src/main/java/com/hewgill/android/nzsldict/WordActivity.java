@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class WordActivity extends BaseActivity {
-
     private TextView gloss;
     private TextView minor;
     private TextView maori;
@@ -29,12 +28,12 @@ public class WordActivity extends BaseActivity {
         Intent intent = getIntent();
         item = (Dictionary.DictItem) intent.getSerializableExtra("item");
 
-        gloss = (TextView) findViewById(R.id.gloss);
-        minor = (TextView) findViewById(R.id.minor);
-        maori = (TextView) findViewById(R.id.maori);
-        viewPager = (ViewPager) findViewById(R.id.sign_media_pager);
+        gloss = findViewById(R.id.gloss);
+        minor = findViewById(R.id.minor);
+        maori = findViewById(R.id.maori);
+        viewPager = findViewById(R.id.sign_media_pager);
         setupSignMediaPager(viewPager);
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.sign_tabs);
+        TabLayout tabLayout = findViewById(R.id.sign_tabs);
         tabLayout.setupWithViewPager(viewPager);
 
         gloss.setText(item.gloss);
@@ -86,9 +85,9 @@ public class WordActivity extends BaseActivity {
         private WordPageChangeListener(ViewPager pager) {
             mPager = pager;
         }
+
         @Override
-        public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-        }
+        public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {}
 
         @Override
         public void onPageSelected(int position) {
@@ -101,8 +100,6 @@ public class WordActivity extends BaseActivity {
         }
 
         @Override
-        public void onPageScrollStateChanged(int state) {
-
-        }
+        public void onPageScrollStateChanged(int state) {}
     }
 }

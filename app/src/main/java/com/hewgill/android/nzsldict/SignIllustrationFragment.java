@@ -11,7 +11,6 @@ import android.widget.ImageView;
 import java.io.IOException;
 import java.io.InputStream;
 
-
 /**
  * A simple {@link Fragment} subclass.
  * Use the {@link SignIllustrationFragment#newInstance} factory method to
@@ -49,12 +48,11 @@ public class SignIllustrationFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_sign_illustration, container, false);
-        ImageView illustrationImageView = (ImageView) rootView.findViewById(R.id.sign_illustration);
-        ImageView handshapeImageView    = (ImageView) rootView.findViewById(R.id.sign_handshape);
-        ImageView locationImageView     = (ImageView) rootView.findViewById(R.id.sign_location);
+        ImageView illustrationImageView = rootView.findViewById(R.id.sign_illustration);
+        ImageView handshapeImageView    = rootView.findViewById(R.id.sign_handshape);
+        ImageView locationImageView     = rootView.findViewById(R.id.sign_location);
 
         illustrationImageView.setContentDescription(mDictItem.gloss + " illustration");
         handshapeImageView.setContentDescription(mDictItem.handshape);

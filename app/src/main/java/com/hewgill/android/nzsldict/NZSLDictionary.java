@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import android.text.Editable;
@@ -82,10 +84,10 @@ public class NZSLDictionary extends AppCompatActivity {
             } else {
                 v = convertView;
             }
-            TextView gv = (TextView) v.findViewById(R.id.item_gloss);
-            TextView mv = (TextView) v.findViewById(R.id.item_minor);
-            TextView mtv = (TextView) v.findViewById(R.id.item_maori);
-            ImageView dv = (ImageView) v.findViewById(R.id.diagram);
+            TextView gv = v.findViewById(R.id.item_gloss);
+            TextView mv = v.findViewById(R.id.item_minor);
+            TextView mtv = v.findViewById(R.id.item_maori);
+            ImageView dv = v.findViewById(R.id.diagram);
             if (position >= getCount()) {
                 Log.e("filter", "request for item " + position + " in list of size " + getCount());
                 return v;
@@ -137,7 +139,7 @@ public class NZSLDictionary extends AppCompatActivity {
                     int i = target.indexOf('|');
                     if (i >= 0) {
                         String hs = target.substring(0, i);
-                        String ls = target.substring(i + 1, target.length());
+                        String ls = target.substring(i + 1);
                         r = dictionary.getWordsByHandshape(hs, ls);
                     } else {
                         r = dictionary.getWords(target);
@@ -273,11 +275,12 @@ public class NZSLDictionary extends AppCompatActivity {
             this.icons = icons;
         }
 
+        @NonNull
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+        public View getView(int position, View convertView, @NonNull ViewGroup parent) {
             View v = super.getView(position, convertView, parent);
-            TextView tv = (TextView) v.findViewById(R.id.handshape_label);
-            ImageView iv = (ImageView) v.findViewById(R.id.handshape_item);
+            TextView tv = v.findViewById(R.id.handshape_label);
+            ImageView iv = v.findViewById(R.id.handshape_item);
             if (position == 0) {
                 tv.setText("(any)");
                 tv.setVisibility(View.VISIBLE);
@@ -302,13 +305,13 @@ public class NZSLDictionary extends AppCompatActivity {
         // following based on http://stackoverflow.com/questions/1737009/how-to-make-a-nice-looking-listview-filter-on-android
         setContentView(R.layout.main);
 
-        mSearchResultsList = (ListView) findViewById(android.R.id.list);
-        mToolbar = (Toolbar) findViewById(R.id.app_toolbar);
+        mSearchResultsList = findViewById(android.R.id.list);
+        mToolbar = findViewById(R.id.app_toolbar);
         setSupportActionBar(mToolbar);
 
         View header = LayoutInflater.from(this).inflate(R.layout.handshape, null);
         getListView().addHeaderView(header, null, false);
-        Gallery hsv = (Gallery) findViewById(R.id.handshape);
+        Gallery hsv = findViewById(R.id.handshape);
         hsv.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 handshapeFilter = Handshapes[position].value;
@@ -319,7 +322,7 @@ public class NZSLDictionary extends AppCompatActivity {
             }
         });
         hsv.setAdapter(new HandshapeAdapter(this, R.layout.handshape_item, R.id.handshape_label, Handshapes));
-        Gallery lcv = (Gallery) findViewById(R.id.location);
+        Gallery lcv = findViewById(R.id.location);
         lcv.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 locationFilter = Locations[position].value;
@@ -335,7 +338,7 @@ public class NZSLDictionary extends AppCompatActivity {
 
         adapter = new DictAdapter(this, R.layout.list_item, dictionary.getWords());
         getListView().setAdapter(adapter);
-        filterText = (EditText) findViewById(R.id.building_list_search_box);
+        filterText = findViewById(R.id.building_list_search_box);
         filterTextContainer = findViewById(R.id.building_list_search_container);
         filterText.setOnEditorActionListener(new EditText.OnEditorActionListener() {
             @Override
@@ -369,8 +372,8 @@ public class NZSLDictionary extends AppCompatActivity {
         });
 
         wotd = findViewById(R.id.building_list_wotd);
-        ImageView wotdImage = (ImageView) findViewById(R.id.building_list_wotd_image);
-        TextView wotdGloss = (TextView) findViewById(R.id.building_list_wotd_gloss);
+        ImageView wotdImage = findViewById(R.id.building_list_wotd_image);
+        TextView wotdGloss = findViewById(R.id.building_list_wotd_gloss);
         final Dictionary.DictItem item = dictionary.getWordOfTheDay();
 
         try {
@@ -414,7 +417,6 @@ public class NZSLDictionary extends AppCompatActivity {
         }
     }
 
-
     private void updateHandshapeList() {
         String hf = handshapeFilter != null ? handshapeFilter : "";
         String lf = locationFilter != null ? locationFilter : "";
@@ -435,7 +437,6 @@ public class NZSLDictionary extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.nzsl_dictionary_menu, menu);
         return super.onCreateOptionsMenu(menu);
     }
-
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {

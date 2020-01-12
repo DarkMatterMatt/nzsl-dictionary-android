@@ -21,18 +21,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
 public class Dictionary {
-
-    private static final Integer EXACT_PRIMARY_MATCH_WEIGHTING = 100;
-    private static final Integer CONTAINS_PRIMARY_MATCH_WEIGHTING = 80;
-    private static final Integer EXACT_SECONDARY_MATCH_WEIGHTING = 70;
-    private static final Integer CONTAINS_SECONDARY_MATCH_WEIGHTING = 60;
-
     public static class DictItem implements Serializable, Comparable {
         public String gloss;
         public String minor;
@@ -42,7 +37,7 @@ public class Dictionary {
         public String handshape;
         public String location;
 
-        static Map<String, String> Locations = new HashMap<String, String>();
+        static Map<String, String> Locations = new HashMap<>();
 
         static {
             Locations.put("in front of body", "location_1_1_in_front_of_body");
@@ -70,8 +65,6 @@ public class Dictionary {
             Locations.put("upper leg", "location_4_15_upper_leg");
         }
 
-        ;
-
         public DictItem() {
             gloss = null;
             minor = null;
@@ -94,8 +87,7 @@ public class Dictionary {
 
         public String imagePath() {
             if (image.isEmpty()) return "";
-            String assetName = "images/signs/" + image.toLowerCase();
-            return assetName;
+            return "images/signs/" + image.toLowerCase();
         }
 
         public String handshapeImage() {
@@ -105,16 +97,16 @@ public class Dictionary {
         public String locationImage() {
             String r = Locations.get(location);
             if (r == null) {
-                r = "";
+                return "";
             }
             return r;
         }
 
+        @NonNull
         public String toString() {
             return gloss + "|" + minor + "|" + maori;
         }
 
-        
         @Override
         public int compareTo(@NonNull Object o) {
             DictItem other = (DictItem) o;
@@ -122,7 +114,7 @@ public class Dictionary {
         }
     }
 
-    private ArrayList<DictItem> words = new ArrayList();
+    private ArrayList<DictItem> words = new ArrayList<>();
 
     public Dictionary(Context context) {
         InputStream db = null;
@@ -221,7 +213,7 @@ public class Dictionary {
     }
 
     public List<DictItem> getWordsByHandshape(String handshape, String location) {
-        List<DictItem> r = new ArrayList<DictItem>(words.size());
+        List<DictItem> r = new ArrayList<>(words.size());
         for (DictItem d : words) {
             if ((handshape == null || handshape.length() == 0 || d.handshape.equals(handshape))
                     && (location == null || location.length() == 0 || d.location.equals(location))) {
@@ -231,7 +223,7 @@ public class Dictionary {
         return r;
     }
 
-    static Set taboo = new HashSet(Arrays.asList(new String[]{
+    private static Set taboo = new HashSet<>(Arrays.asList(
             "(vaginal) discharge",
             "abortion",
             "abuse",
@@ -302,11 +294,11 @@ public class Dictionary {
             "tampon",
             "testicles",
             "vagina",
-            "virgin",
-    }));
+            "virgin"
+    ));
 
     public DictItem getWordOfTheDay() {
-        String buf = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+        String buf = new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date());
         try {
             byte[] digest = MessageDigest.getInstance("SHA-1").digest(buf.getBytes());
             int r = (((digest[0] & 0xff) << 8) | (digest[1] & 0xff)) % words.size();

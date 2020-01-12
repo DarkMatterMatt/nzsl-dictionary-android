@@ -17,7 +17,6 @@ import android.view.ViewGroup;
 import android.widget.MediaController;
 import android.widget.VideoView;
 
-
 /**
  * A simple {@link Fragment} subclass.
  * Use the {@link SignVideoFragment#newInstance} factory method to
@@ -28,7 +27,6 @@ public class SignVideoFragment extends Fragment {
     private VideoView mVideo;
     private View mRootView;
     private View mAnchorView;
-    private boolean mMediaControllerLaidOut = false;
     private Dictionary.DictItem mDictItem;
     private MediaController mMediaController;
     private View mNoNetworkFrame;
@@ -43,7 +41,6 @@ public class SignVideoFragment extends Fragment {
     public SignVideoFragment() {
         // Required empty public constructor
     }
-
 
     /**
      * Use this factory method to create a new instance of
@@ -81,7 +78,7 @@ public class SignVideoFragment extends Fragment {
         getContext().unregisterReceiver(mConnectivityChangeReceiver);
     }
 
-    public boolean updateViewForConnectivityStatus() {
+    public void updateViewForConnectivityStatus() {
         boolean networkIsAvailable = isNetworkAvailable();
 
         if (networkIsAvailable) {
@@ -92,19 +89,15 @@ public class SignVideoFragment extends Fragment {
             mVideo.setVisibility(View.GONE);
             mNoNetworkFrame.setVisibility(View.VISIBLE);
         }
-
-        return networkIsAvailable;
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
          mRootView = inflater.inflate(R.layout.fragment_sign_video, container, false);
          mAnchorView = mRootView.findViewById(R.id.sign_video_anchor);
 
-        mVideo = (VideoView) mRootView.findViewById(R.id.sign_video);
+        mVideo = mRootView.findViewById(R.id.sign_video);
         mNoNetworkFrame = mRootView.findViewById(R.id.sign_video_network_unavailable);
-
 
         mVideo.setOnErrorListener(new MediaPlayer.OnErrorListener() {
             public boolean onError(MediaPlayer mp, int what, int extra) {
@@ -124,8 +117,6 @@ public class SignVideoFragment extends Fragment {
         return mRootView;
     }
 
-
-
     private boolean isNetworkAvailable() {
         ConnectivityManager connectivityManager
                 = (ConnectivityManager) getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -143,5 +134,4 @@ public class SignVideoFragment extends Fragment {
         mVideo.setVisibility(View.INVISIBLE);
         mMediaController.hide();
     }
-
 }

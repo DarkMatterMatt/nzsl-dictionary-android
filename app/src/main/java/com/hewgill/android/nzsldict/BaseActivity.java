@@ -7,11 +7,9 @@ import android.view.MenuItem;
 
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
-
-public class BaseActivity extends AppCompatActivity {
-
+abstract public class BaseActivity extends AppCompatActivity {
     protected void setupAppToolbar() {
-        Toolbar appToolbar = (Toolbar) findViewById(R.id.app_toolbar);
+        Toolbar appToolbar = findViewById(R.id.app_toolbar);
         setSupportActionBar(appToolbar);
         // add back arrow to toolbar
         if (getSupportActionBar() != null) {
