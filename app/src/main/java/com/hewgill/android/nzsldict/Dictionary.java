@@ -94,16 +94,18 @@ public class Dictionary {
             location = null;
         }
 
-        public DictItem(String gloss, String minor, String maori, String image, String video, String handshape, String location) {
+        public DictItem(String gloss, String minor, String maori, String image, String video,
+                        String handshape, String location, String categories, String normGloss,
+                        String glossWords, String normMinor, String minorWords, String normMaori, String maoriWords) {
             this.gloss = gloss;
             this.minor = minor;
             this.maori = maori;
-            normGloss = normalise(gloss);
-            normMinor = normalise(minor);
-            normMaori = normalise(maori);
-            glossWords = Arrays.asList(normGloss.split("\\s*[^\\w']+\\s*"));
-            minorWords = Arrays.asList(normMinor.split(", "));
-            maoriWords = Arrays.asList(normMaori.split(", "));
+            this.normGloss = normGloss;
+            this.normMinor = normMinor;
+            this.normMaori = normMaori;
+            this.glossWords = Arrays.asList(glossWords.split("\\|"));
+            this.minorWords = Arrays.asList(minorWords.split("\\|"));
+            this.maoriWords = Arrays.asList(maoriWords.split("\\|"));
             this.image = image;
             this.video = video;
             this.handshape = handshape;
@@ -152,8 +154,8 @@ public class Dictionary {
                 if (s == null) {
                     break;
                 }
-                String[] a = s.split("\t");
-                words.add(new DictItem(a[0], a[1], a[2], a[3], a[4], a[5], a[6]));
+                String[] a = s.split("\t", -1);
+                words.add(new DictItem(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12], a[13]));
             }
         } catch (IOException x) {
             Log.d("dictionary", "exception reading from word list " + x.getMessage());
