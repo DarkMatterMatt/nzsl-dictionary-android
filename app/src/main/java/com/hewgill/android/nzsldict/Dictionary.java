@@ -116,21 +116,23 @@ public class Dictionary {
             categories = null;
         }
 
-        public DictItem(String gloss, String minor, String maori, String image, String video, String handshape, String location, ArrayList<String> categories) {
+        public DictItem(String gloss, String minor, String maori, String image, String video,
+                        String handshape, String location, String categories, String normGloss,
+                        String glossWords, String normMinor, String minorWords, String normMaori, String maoriWords) {
             this.gloss = gloss;
             this.minor = minor;
             this.maori = maori;
-            normGloss = normalise(gloss);
-            normMinor = normalise(minor);
-            normMaori = normalise(maori);
-            glossWords = new ArrayList<>(Arrays.asList(normGloss.split("\\s*[^\\w']+\\s*")));
-            minorWords = new ArrayList<>(Arrays.asList(normMinor.split(", ")));
-            maoriWords = new ArrayList<>(Arrays.asList(normMaori.split(", ")));
+            this.normGloss = normGloss;
+            this.normMinor = normMinor;
+            this.normMaori = normMaori;
+            this.glossWords = Arrays.asList(glossWords.split("\\|"));
+            this.minorWords = Arrays.asList(minorWords.split("\\|"));
+            this.maoriWords = Arrays.asList(maoriWords.split("\\|"));
+            this.categories = Arrays.asList(categories.split("\\|"));
             this.image = image;
             this.video = video;
             this.handshape = handshape;
             this.location = location;
-            this.categories = categories;
         }
 
         public String imagePath() {
@@ -193,16 +195,8 @@ public class Dictionary {
                 if (s == null) {
                     break;
                 }
-                String[] a = s.split("\t");
-
-                // load the categories/topics the word is part of
-                ArrayList<String> wordCategories = new ArrayList<>();
-                if (a.length >= 8) {
-                    // split on every comma NOT followed by a space
-                    wordCategories = new ArrayList<>(Arrays.asList(a[7].split(",(?=[^ ])")));
-                }
-
-                DictItem item = new DictItem(a[0], a[1], a[2], a[3], a[4], a[5], a[6], wordCategories);
+                String[] a = s.split("\t", -1);
+                DictItem item = new DictItem(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12], a[13]);
                 words.add(item);
 
                 // give each tag a reference to the item
