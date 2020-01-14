@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -214,60 +215,6 @@ public class Dictionary {
         }
     }
 
-    private Dictionary(ArrayList<DictItem> words) {
-        this.words = words;
-        for (DictItem word : words) {
-            // give each tag a reference to the item
-            for (String category : word.categories) {
-                if (!categories.containsKey(category)) {
-                    categories.put(category, new DictCategory(category, new ArrayList<DictItem>()));
-                }
-                categories.get(category).words.add(word);
-            }
-        }
-    }
-
-    private static void saveWordsToJson(Context context, ArrayList<DictItem> words) {
-        try {
-            Gson gson = new Gson();
-            OutputStreamWriter osw = new OutputStreamWriter(context.openFileOutput("nzsl.json", Context.MODE_PRIVATE));
-            osw.write(gson.toJson(words));
-            osw.close();
-        }
-        catch (IOException e) {
-            Log.e("Exception", "File write failed: " + e.toString());
-        }
-    }
-
-    private static ArrayList<DictItem> readWordsFromJson(Context context) {
-        try {
-            InputStream inputStream = context.openFileInput("nzsl.json");
-            if ( inputStream == null ) {
-                return new ArrayList<>();
-            }
-            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-            String receiveString = "";
-            StringBuilder stringBuilder = new StringBuilder();
-
-            while ( (receiveString = bufferedReader.readLine()) != null ) {
-                stringBuilder.append(receiveString);
-            }
-            inputStream.close();
-
-            Gson gson = new Gson();
-            Type type = new TypeToken<ArrayList<DictItem>>() {}.getType();
-            return gson.fromJson(stringBuilder.toString(), type);
-        }
-        catch (FileNotFoundException e) {
-            Log.e("Dictionary", "File not found: " + e.toString());
-        }
-        catch (IOException e) {
-            Log.e("Dictionary", "Can not read file: " + e.toString());
-        }
-        return new ArrayList<>();
-    }
-
     public ArrayList<DictItem> getWords() {
         return words;
     }
@@ -344,7 +291,7 @@ public class Dictionary {
     }
 
     public List<DictItem> getWordsByHandshape(String handshape, String location) {
-        List<DictItem> r = new ArrayList<DictItem>(words.size());
+        List<DictItem> r = new ArrayList<>(words.size());
         for (DictItem d : words) {
             if ((handshape == null || handshape.length() == 0 || d.handshape.equals(handshape))
                     && (location == null || location.length() == 0 || d.location.equals(location))) {
@@ -354,7 +301,7 @@ public class Dictionary {
         return r;
     }
 
-    static Set taboo = new HashSet(Arrays.asList(new String[]{
+    static Set taboo = new HashSet<>(Arrays.asList(
             "(vaginal) discharge",
             "abortion",
             "abuse",
@@ -425,11 +372,11 @@ public class Dictionary {
             "tampon",
             "testicles",
             "vagina",
-            "virgin",
-    }));
+            "virgin"
+    ));
 
     public DictItem getWordOfTheDay() {
-        String buf = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+        String buf = new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date());
         try {
             byte[] digest = MessageDigest.getInstance("SHA-1").digest(buf.getBytes());
             int r = (((digest[0] & 0xff) << 8) | (digest[1] & 0xff)) % words.size();
