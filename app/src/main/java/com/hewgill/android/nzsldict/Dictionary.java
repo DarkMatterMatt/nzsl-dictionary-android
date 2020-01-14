@@ -125,10 +125,10 @@ public class Dictionary {
             this.normGloss = normGloss;
             this.normMinor = normMinor;
             this.normMaori = normMaori;
-            this.glossWords = Arrays.asList(glossWords.split("\\|"));
-            this.minorWords = Arrays.asList(minorWords.split("\\|"));
-            this.maoriWords = Arrays.asList(maoriWords.split("\\|"));
-            this.categories = Arrays.asList(categories.split("\\|"));
+            this.glossWords = new ArrayList<>(Arrays.asList(glossWords.split("\\|")));
+            this.minorWords = new ArrayList<>(Arrays.asList(minorWords.split("\\|")));
+            this.maoriWords = new ArrayList<>(Arrays.asList(maoriWords.split("\\|")));
+            this.categories = new ArrayList<>(Arrays.asList(categories.split("\\|")));
             this.image = image;
             this.video = video;
             this.handshape = handshape;
@@ -169,16 +169,7 @@ public class Dictionary {
         if (instance == null) {
             synchronized(Dictionary.class) {
                 if (instance == null) {
-                    File file = context.getFileStreamPath("nzsl.json");
-                    if (file == null || !file.exists()) {
-                        // generate JSON
-                        instance = new Dictionary(context);
-                        saveWordsToJson(context, instance.getWords());
-                    }
-                    else {
-                        ArrayList<DictItem> words = readWordsFromJson(context);
-                        instance = new Dictionary(words);
-                    }
+                    instance = new Dictionary(context);
                 }
             }
         }
@@ -198,14 +189,6 @@ public class Dictionary {
                 String[] a = s.split("\t", -1);
                 DictItem item = new DictItem(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12], a[13]);
                 words.add(item);
-
-                // give each tag a reference to the item
-                for (String category : wordCategories) {
-                    if (!categories.containsKey(category)) {
-                        categories.put(category, new DictCategory(category, new ArrayList<DictItem>()));
-                    }
-                    categories.get(category).words.add(item);
-                }
             }
         } catch (IOException x) {
             Log.d("dictionary", "exception reading from word list " + x.getMessage());
@@ -219,8 +202,15 @@ public class Dictionary {
             }
         }
         Collections.sort(words);
-        for (DictCategory category : categories.values()) {
-            Collections.sort(category.words);
+
+        for (DictItem item : words) {
+            // give each tag a reference to the item
+            for (String category : item.categories) {
+                if (!categories.containsKey(category)) {
+                    categories.put(category, new DictCategory(category, new ArrayList<DictItem>()));
+                }
+                categories.get(category).words.add(item);
+            }
         }
     }
 
@@ -234,9 +224,6 @@ public class Dictionary {
                 }
                 categories.get(category).words.add(word);
             }
-        }
-        for (DictCategory category : categories.values()) {
-            Collections.sort(category.words);
         }
     }
 
