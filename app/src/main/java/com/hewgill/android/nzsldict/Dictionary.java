@@ -4,18 +4,11 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.io.Serializable;
-import java.lang.reflect.Type;
 import java.security.MessageDigest;
 import java.text.Normalizer;
 import java.text.SimpleDateFormat;
@@ -34,11 +27,6 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 public class Dictionary {
-
-    private static final Integer EXACT_PRIMARY_MATCH_WEIGHTING = 100;
-    private static final Integer CONTAINS_PRIMARY_MATCH_WEIGHTING = 80;
-    private static final Integer EXACT_SECONDARY_MATCH_WEIGHTING = 70;
-    private static final Integer CONTAINS_SECONDARY_MATCH_WEIGHTING = 60;
     private static volatile Dictionary instance = null;
 
     public static class DictCategory implements Serializable, Comparable<DictCategory> {
@@ -159,7 +147,7 @@ public class Dictionary {
 
         @Override
         public int compareTo(@NonNull DictItem other) {
-            return skip_parens(this.gloss).compareToIgnoreCase(skip_parens(other.gloss));
+            return skipParens(this.gloss).compareToIgnoreCase(skipParens(other.gloss));
         }
     }
 
@@ -390,7 +378,7 @@ public class Dictionary {
         }
     }
 
-    private static String skip_parens(String s) {
+    private static String skipParens(String s) {
         if (s.charAt(0) == '(') {
             int i = s.indexOf(") ");
             if (i > 0) {
