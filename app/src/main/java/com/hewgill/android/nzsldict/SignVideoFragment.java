@@ -77,10 +77,8 @@ public class SignVideoFragment extends Fragment {
         getContext().unregisterReceiver(mConnectivityChangeReceiver);
     }
 
-    public boolean updateViewForConnectivityStatus() {
-        boolean networkIsAvailable = isNetworkAvailable();
-
-        if (networkIsAvailable) {
+    public void updateViewForConnectivityStatus() {
+        if (isNetworkAvailable()) {
             mVideo.setVisibility(View.VISIBLE);
             mNoNetworkFrame.setVisibility(View.GONE);
             mVideo.setVideoURI(Uri.parse(mDictItem.video));
@@ -88,8 +86,6 @@ public class SignVideoFragment extends Fragment {
             mVideo.setVisibility(View.GONE);
             mNoNetworkFrame.setVisibility(View.VISIBLE);
         }
-
-        return networkIsAvailable;
     }
 
     @Override
@@ -114,7 +110,7 @@ public class SignVideoFragment extends Fragment {
         });
 
         // Start loading video if network is available
-        if (isNetworkAvailable()) updateViewForConnectivityStatus();
+        updateViewForConnectivityStatus();
 
         return mRootView;
     }
