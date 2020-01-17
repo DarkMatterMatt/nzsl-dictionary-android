@@ -116,7 +116,6 @@ public class NZSLDictionary extends AppCompatActivity {
         private class HandshapeFilter extends Filter {
             @Override
             protected Filter.FilterResults performFiltering(CharSequence constraint) {
-                FilterResults results = new FilterResults();
 
                 final String hf = handshapeFilter;
                 final String lf = locationFilter;
@@ -137,12 +136,14 @@ public class NZSLDictionary extends AppCompatActivity {
                     int i = target.indexOf('|');
                     if (i >= 0) {
                         String hs = target.substring(0, i);
-                        String ls = target.substring(i + 1, target.length());
+                        String ls = target.substring(i + 1);
                         r = dictionary.getWordsByHandshape(hs, ls);
                     } else {
                         r = dictionary.getWords(target);
                     }
                 }
+
+                FilterResults results = new FilterResults();
                 results.values = r;
                 results.count = r.size();
                 return results;
