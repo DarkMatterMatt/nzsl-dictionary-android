@@ -26,7 +26,6 @@ public class SignVideoFragment extends Fragment {
     private VideoView mVideo;
     private View mRootView;
     private View mAnchorView;
-    private boolean mMediaControllerLaidOut = false;
     private Dictionary.DictItem mDictItem;
     private MediaController mMediaController;
     private View mNoNetworkFrame;
