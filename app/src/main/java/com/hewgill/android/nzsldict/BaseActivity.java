@@ -7,9 +7,7 @@ import android.view.MenuItem;
 
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
-
 public class BaseActivity extends AppCompatActivity {
-
     protected void setupAppToolbar() {
         Toolbar appToolbar = (Toolbar) findViewById(R.id.app_toolbar);
         setSupportActionBar(appToolbar);

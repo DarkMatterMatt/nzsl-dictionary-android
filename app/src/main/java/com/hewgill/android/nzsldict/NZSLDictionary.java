@@ -35,145 +35,6 @@ import java.util.List;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 public class NZSLDictionary extends AppCompatActivity {
-    private Dictionary dictionary;
-    private EditText filterText;
-    private TextWatcher filterTextWatcher;
-    private View handshapeHeader;
-    private View wotd;
-    private ListView mSearchResultsList;
-    private DictAdapter adapter;
-    private String handshapeFilter;
-    private String locationFilter;
-    private Toolbar mToolbar;
-    private View filterTextContainer;
-
-    class DictAdapter extends BaseAdapter {
-        private int resource;
-        private List<Dictionary.DictItem> words;
-        private LayoutInflater inflater;
-        private Filter filter;
-
-        public DictAdapter(Context context, int resource, List<Dictionary.DictItem> words) {
-            this.resource = resource;
-            this.words = words;
-            inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        }
-
-        @Override
-        public int getCount() {
-            return words.size();
-        }
-
-        @Override
-        public Dictionary.DictItem getItem(int position) {
-            return words.get(position);
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return position;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            View v;
-            if (convertView == null) {
-                v = inflater.inflate(resource, parent, false);
-            } else {
-                v = convertView;
-            }
-            TextView gv = (TextView) v.findViewById(R.id.item_gloss);
-            TextView mv = (TextView) v.findViewById(R.id.item_minor);
-            TextView mtv = (TextView) v.findViewById(R.id.item_maori);
-            ImageView dv = (ImageView) v.findViewById(R.id.diagram);
-            if (position >= getCount()) {
-                Log.e("filter", "request for item " + position + " in list of size " + getCount());
-                return v;
-            }
-            Dictionary.DictItem item = getItem(position);
-            gv.setText(item.gloss);
-            mv.setText(item.minor);
-            mtv.setText(item.maori);
-
-            try {
-                InputStream ims = getAssets().open(item.imagePath());
-                Drawable d = Drawable.createFromStream(ims, null);
-                dv.setImageDrawable(d);
-            } catch (IOException e) {
-                dv.setImageDrawable(null);
-                System.out.println(e.toString());
-            }
-            return v;
-        }
-
-        public Filter getFilter() {
-            if (filter == null) {
-                filter = new HandshapeFilter();
-            }
-            return filter;
-        }
-
-        private class HandshapeFilter extends Filter {
-            @Override
-            protected Filter.FilterResults performFiltering(CharSequence constraint) {
-
-                final String hf = handshapeFilter;
-                final String lf = locationFilter;
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException x) {
-                }
-                if (hf != handshapeFilter || lf != locationFilter) {
-                    // something has changed, abandon and we will get rerun
-                    return null;
-                }
-
-                List<Dictionary.DictItem> r;
-                if (constraint == null) {
-                    r = dictionary.getWords();
-                } else {
-                    String target = constraint.toString();
-                    int i = target.indexOf('|');
-                    if (i >= 0) {
-                        String hs = target.substring(0, i);
-                        String ls = target.substring(i + 1);
-                        r = dictionary.getWordsByHandshape(hs, ls);
-                    } else {
-                        r = dictionary.getWords(target);
-                    }
-                }
-
-                FilterResults results = new FilterResults();
-                results.values = r;
-                results.count = r.size();
-                return results;
-            }
-
-            @Override
-            protected void publishResults(CharSequence constraint, Filter.FilterResults results) {
-                if (results == null) {
-                    return;
-                }
-                words = (List<Dictionary.DictItem>) results.values;
-                if (results.count > 0) {
-                    notifyDataSetChanged();
-                } else {
-                    notifyDataSetInvalidated();
-                }
-            }
-        }
-    }
-
-    static class HandshapeInfo {
-        final int resource_id;
-        final String value;
-
-        HandshapeInfo(int resource_id, String value) {
-            this.resource_id = resource_id;
-            this.value = value;
-        }
-    }
-
     static HandshapeInfo[] Handshapes = new HandshapeInfo[]{
             new HandshapeInfo(0, null),
             new HandshapeInfo(R.drawable.handshape_1_1_1, "1.1.1"),
@@ -240,7 +101,6 @@ public class NZSLDictionary extends AppCompatActivity {
             new HandshapeInfo(R.drawable.handshape_8_1_2, "8.1.2"),
             new HandshapeInfo(R.drawable.handshape_8_1_3, "8.1.3"),
     };
-
     static HandshapeInfo[] Locations = new HandshapeInfo[]{
             new HandshapeInfo(0, null),
             new HandshapeInfo(R.drawable.location_1_1_in_front_of_body, "in front of body"),
@@ -265,32 +125,17 @@ public class NZSLDictionary extends AppCompatActivity {
             new HandshapeInfo(R.drawable.location_6_20_fingers_thumb, "fingers/thumb"),
             new HandshapeInfo(R.drawable.location_6_22_back_of_hand, "back of hand"),
     };
-
-    static class HandshapeAdapter extends ArrayAdapter<HandshapeInfo> {
-        HandshapeInfo[] icons;
-
-        public HandshapeAdapter(Context context, int resource, int textViewResourceId, HandshapeInfo[] icons) {
-            super(context, resource, textViewResourceId, icons);
-            this.icons = icons;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            View v = super.getView(position, convertView, parent);
-            TextView tv = (TextView) v.findViewById(R.id.handshape_label);
-            ImageView iv = (ImageView) v.findViewById(R.id.handshape_item);
-            if (position == 0) {
-                tv.setText("(any)");
-                tv.setVisibility(View.VISIBLE);
-                iv.setVisibility(View.GONE);
-            } else {
-                iv.setImageResource(this.icons[position].resource_id);
-                iv.setVisibility(View.VISIBLE);
-                tv.setVisibility(View.GONE);
-            }
-            return v;
-        }
-    }
+    private Dictionary dictionary;
+    private EditText filterText;
+    private TextWatcher filterTextWatcher;
+    private View handshapeHeader;
+    private View wotd;
+    private ListView mSearchResultsList;
+    private DictAdapter adapter;
+    private String handshapeFilter;
+    private String locationFilter;
+    private Toolbar mToolbar;
+    private View filterTextContainer;
 
     /**
      * Called when the activity is first created.
@@ -415,7 +260,6 @@ public class NZSLDictionary extends AppCompatActivity {
         }
     }
 
-
     private void updateHandshapeList() {
         String hf = handshapeFilter != null ? handshapeFilter : "";
         String lf = locationFilter != null ? locationFilter : "";
@@ -436,7 +280,6 @@ public class NZSLDictionary extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.nzsl_dictionary_menu, menu);
         return super.onCreateOptionsMenu(menu);
     }
-
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
@@ -480,5 +323,158 @@ public class NZSLDictionary extends AppCompatActivity {
 
     protected void attachBaseContext(Context newBase) {
         super.attachBaseContext(CalligraphyContextWrapper.wrap(newBase));
+    }
+
+    static class HandshapeInfo {
+        final int resource_id;
+        final String value;
+
+        HandshapeInfo(int resource_id, String value) {
+            this.resource_id = resource_id;
+            this.value = value;
+        }
+    }
+
+    static class HandshapeAdapter extends ArrayAdapter<HandshapeInfo> {
+        HandshapeInfo[] icons;
+
+        public HandshapeAdapter(Context context, int resource, int textViewResourceId, HandshapeInfo[] icons) {
+            super(context, resource, textViewResourceId, icons);
+            this.icons = icons;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            View v = super.getView(position, convertView, parent);
+            TextView tv = (TextView) v.findViewById(R.id.handshape_label);
+            ImageView iv = (ImageView) v.findViewById(R.id.handshape_item);
+            if (position == 0) {
+                tv.setText("(any)");
+                tv.setVisibility(View.VISIBLE);
+                iv.setVisibility(View.GONE);
+            } else {
+                iv.setImageResource(this.icons[position].resource_id);
+                iv.setVisibility(View.VISIBLE);
+                tv.setVisibility(View.GONE);
+            }
+            return v;
+        }
+    }
+
+    class DictAdapter extends BaseAdapter {
+        private int resource;
+        private List<Dictionary.DictItem> words;
+        private LayoutInflater inflater;
+        private Filter filter;
+
+        public DictAdapter(Context context, int resource, List<Dictionary.DictItem> words) {
+            this.resource = resource;
+            this.words = words;
+            inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        }
+
+        @Override
+        public int getCount() {
+            return words.size();
+        }
+
+        @Override
+        public Dictionary.DictItem getItem(int position) {
+            return words.get(position);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            View v;
+            if (convertView == null) {
+                v = inflater.inflate(resource, parent, false);
+            } else {
+                v = convertView;
+            }
+            TextView gv = (TextView) v.findViewById(R.id.item_gloss);
+            TextView mv = (TextView) v.findViewById(R.id.item_minor);
+            TextView mtv = (TextView) v.findViewById(R.id.item_maori);
+            ImageView dv = (ImageView) v.findViewById(R.id.diagram);
+            if (position >= getCount()) {
+                Log.e("filter", "request for item " + position + " in list of size " + getCount());
+                return v;
+            }
+            Dictionary.DictItem item = getItem(position);
+            gv.setText(item.gloss);
+            mv.setText(item.minor);
+            mtv.setText(item.maori);
+
+            try {
+                InputStream ims = getAssets().open(item.imagePath());
+                Drawable d = Drawable.createFromStream(ims, null);
+                dv.setImageDrawable(d);
+            } catch (IOException e) {
+                dv.setImageDrawable(null);
+                System.out.println(e.toString());
+            }
+            return v;
+        }
+
+        public Filter getFilter() {
+            if (filter == null) {
+                filter = new HandshapeFilter();
+            }
+            return filter;
+        }
+
+        private class HandshapeFilter extends Filter {
+            @Override
+            protected Filter.FilterResults performFiltering(CharSequence constraint) {
+
+                final String hf = handshapeFilter;
+                final String lf = locationFilter;
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException x) {
+                }
+                if (hf != handshapeFilter || lf != locationFilter) {
+                    // something has changed, abandon and we will get rerun
+                    return null;
+                }
+
+                List<Dictionary.DictItem> r;
+                if (constraint == null) {
+                    r = dictionary.getWords();
+                } else {
+                    String target = constraint.toString();
+                    int i = target.indexOf('|');
+                    if (i >= 0) {
+                        String hs = target.substring(0, i);
+                        String ls = target.substring(i + 1);
+                        r = dictionary.getWordsByHandshape(hs, ls);
+                    } else {
+                        r = dictionary.getWords(target);
+                    }
+                }
+
+                FilterResults results = new FilterResults();
+                results.values = r;
+                results.count = r.size();
+                return results;
+            }
+
+            @Override
+            protected void publishResults(CharSequence constraint, Filter.FilterResults results) {
+                if (results == null) {
+                    return;
+                }
+                words = (List<Dictionary.DictItem>) results.values;
+                if (results.count > 0) {
+                    notifyDataSetChanged();
+                } else {
+                    notifyDataSetInvalidated();
+                }
+            }
+        }
     }
 }

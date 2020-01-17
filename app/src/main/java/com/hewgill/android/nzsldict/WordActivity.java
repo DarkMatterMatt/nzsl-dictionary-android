@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class WordActivity extends BaseActivity {
-
     private TextView gloss;
     private TextView minor;
     private TextView maori;
@@ -54,7 +53,7 @@ public class WordActivity extends BaseActivity {
         String linkColor = String.format("%X", typedValue.data).substring(2); // strip alpha value
 
         // create the list of tags
-        for (int i = 0; i < item.categories.size(); i++){
+        for (int i = 0; i < item.categories.size(); i++) {
             TextView tv = new TextView(this);
             String text = item.categories.get(i).toLowerCase();
             text = String.format("<font color=\"#%s\"><b><u>%s</u></b></font>", linkColor, text);
@@ -123,6 +122,7 @@ public class WordActivity extends BaseActivity {
         private WordPageChangeListener(ViewPager pager) {
             mPager = pager;
         }
+
         @Override
         public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
         }

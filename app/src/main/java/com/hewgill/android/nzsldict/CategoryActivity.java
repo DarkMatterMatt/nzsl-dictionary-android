@@ -20,12 +20,47 @@ import java.io.InputStream;
 import java.util.List;
 
 public class CategoryActivity extends BaseActivity {
-
     private Dictionary dictionary;
     private ListView mSearchResultsList;
     private DictAdapter adapter;
     private Dictionary.DictCategory category;
 
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        dictionary = Dictionary.getInstance(getApplicationContext());
+        // following based on http://stackoverflow.com/questions/1737009/how-to-make-a-nice-looking-listview-filter-on-android
+        setContentView(R.layout.category);
+        setupAppToolbar();
+
+        mSearchResultsList = (ListView) findViewById(android.R.id.list);
+        String categoryStr = getIntent().getStringExtra("category");
+        category = dictionary.getCategories().get(categoryStr);
+
+        adapter = new DictAdapter(this, R.layout.list_item, category.words);
+        getListView().setAdapter(adapter);
+
+        getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                onListItemClick((ListView) parent, view, position, id);
+            }
+        });
+    }
+
+    public ListView getListView() {
+        return mSearchResultsList;
+    }
+
+    protected void onListItemClick(ListView l, View v, int position, long id) {
+        Dictionary.DictItem item = (Dictionary.DictItem) getListView().getItemAtPosition(position);
+        Log.d("list", item.gloss);
+        Intent next = new Intent();
+        next.setClass(this, WordActivity.class);
+        next.putExtra("item", item);
+        startActivity(next);
+    }
 
     class DictAdapter extends BaseAdapter {
         private int resource;
@@ -85,42 +120,5 @@ public class CategoryActivity extends BaseActivity {
             }
             return v;
         }
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        dictionary = Dictionary.getInstance(getApplicationContext());
-        // following based on http://stackoverflow.com/questions/1737009/how-to-make-a-nice-looking-listview-filter-on-android
-        setContentView(R.layout.category);
-        setupAppToolbar();
-
-        mSearchResultsList = (ListView) findViewById(android.R.id.list);
-        String categoryStr = getIntent().getStringExtra("category");
-        category = dictionary.getCategories().get(categoryStr);
-
-        adapter = new DictAdapter(this, R.layout.list_item, category.words);
-        getListView().setAdapter(adapter);
-
-        getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                onListItemClick((ListView) parent, view, position, id);
-            }
-        });
-    }
-
-    public ListView getListView() {
-        return mSearchResultsList;
-    }
-
-    protected void onListItemClick(ListView l, View v, int position, long id) {
-        Dictionary.DictItem item = (Dictionary.DictItem) getListView().getItemAtPosition(position);
-        Log.d("list", item.gloss);
-        Intent next = new Intent();
-        next.setClass(this, WordActivity.class);
-        next.putExtra("item", item);
-        startActivity(next);
     }
 }
