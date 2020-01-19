@@ -172,6 +172,9 @@ public class Dictionary {
     }
 
     private static String skipParens(String s) {
+        if (s.length() == 0) {
+            return s;
+        }
         if (s.charAt(0) == '(') {
             int i = s.indexOf(") ");
             if (i > 0) {
@@ -381,13 +384,25 @@ public class Dictionary {
             return r;
         }
 
+        @NonNull
         public String toString() {
             return gloss + "|" + minor + "|" + maori;
         }
 
         @Override
         public int compareTo(@NonNull DictItem other) {
-            return skipParens(this.gloss).compareToIgnoreCase(skipParens(other.gloss));
+            int res;
+            res = skipParens(this.normGloss).compareTo(skipParens(other.normGloss));
+            if (res != 0) return res;
+
+            res = skipParens(this.normMinor).compareTo(skipParens(other.normMinor));
+            if (res != 0) return res;
+
+            res = skipParens(this.normMaori).compareTo(skipParens(other.normMaori));
+            if (res != 0) return res;
+
+            // return 1 to keep duplicates, return 0 to remove them (in search results)
+            return 1;
         }
     }
 }
